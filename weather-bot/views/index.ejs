@@ -1,27 +1,11 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Weather Bot</title>
+    <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
   </head>
   <body>
-    <h1>Weather Bot</h1>
-    <h2>Location</h2>
-    <p>City: <%= data.results.channel.location.city %></p>
-    <p>Country: <%= data.results.channel.location.country %></p>
-    <p>Region: <%= data.results.channel.location.region %></p>
-    <h2>Wind</h2>
-    <p>Chill: <%= data.results.channel.wind.chill %></p>
-    <p>Direction: <%= data.results.channel.wind.direction %></p>
-    <p>Speed: <%= data.results.channel.wind.speed %></p>
-    <h2>Atmosphere</h2>
-    <p>Humidity: <%= data.results.channel.atmosphere.humidity %></p>
-    <p>Pressure: <%= data.results.channel.atmosphere.pressure %></p>
-    <p>Rising: <%= data.results.channel.atmosphere.rising %></p>
-    <p>Visibility: <%= data.results.channel.atmosphere.visibility %></p>
-    <h2>Astronomy</h2>
-    <p>Sunrise: <%= data.results.channel.astronomy.sunrise %></p>
-    <p>Sunset: <%= data.results.channel.astronomy.sunset %></p>
-
+    <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
   </body>
 </html>
