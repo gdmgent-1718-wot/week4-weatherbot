@@ -1,17 +1,16 @@
 {
-  "name": "weather-bot",
-  "version": "0.0.0",
-  "private": true,
+  "name": "webhook-echo-sample",
+  "version": "1.0.0",
+  "description": "Webhook echo sample",
+  "main": "index.js",
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node index.js"
   },
+  "author": "Sunil Syal",
   "dependencies": {
-    "body-parser": "~1.18.2",
-    "cookie-parser": "~1.4.3",
-    "debug": "~2.6.9",
-    "ejs": "~2.5.7",
-    "express": "~4.15.5",
-    "morgan": "~1.9.0",
-    "serve-favicon": "~2.4.5"
+    "body-parser": "^1.15.0",
+    "express": "^4.13.4",
+    "slackhook": "^1.0.0",
+    "yahoo-weather": "^2.2.2"
   }
 }
