@@ -45,11 +45,20 @@ app.post('/artevelde-bot', function(req, res) {
                     "text": "Geen resultaten voor de artiest: " + artist,
                     "attachments": [{
                         "color": "#366abc",
+                        "callback_id": response.data.artists.items[0].uri,
                         "fields": [{
                             "title": "Artiest",
                             "value": response.data.artists.items[0].name,
                             "short": "false"
                         }],
+                        "actions": [
+                            {
+                                "name": "Artiest afspelen",
+                                "text": "Afspelen",
+                                "type": "button",
+                                "value": response.data.artists.items[0].uri
+                            }
+                        ],
                         "thumb_url": response.data.artists.items[0].images[0].url,
                     }]
                 }
@@ -81,6 +90,7 @@ app.post('/artevelde-bot', function(req, res) {
                     "text": "Resultaat voor het album: " + album,
                     "attachments": [{
                         "color": "#366abc",
+                        "callback_id": response.data.albums.items[0].uri,
                         "fields": [{
                             "title": "Album",
                             "value": response.data.albums.items[0].name,
@@ -90,6 +100,14 @@ app.post('/artevelde-bot', function(req, res) {
                             "value": response.data.albums.items[0].artists[0].name,
                             "short": "false"
                         }],
+                        "actions": [
+                            {
+                                "name": "Album afspelen",
+                                "text": "Afspelen",
+                                "type": "button",
+                                "value": response.data.albums.items[0].uri
+                            }
+                        ],
                         "thumb_url": response.data.albums.items[0].images[0].url,
                     }]
                 }
@@ -121,6 +139,7 @@ app.post('/artevelde-bot', function(req, res) {
                     "text": "Resultaat voor het nummer: " + track,
                     "attachments": [{
                         "color": "#366abc",
+                        "callback_id": response.data.tracks.items[0].uri,
                         "fields": [{
                             "title": "Artiest",
                             "value": response.data.tracks.items[0].artists[0].name,
@@ -141,6 +160,14 @@ app.post('/artevelde-bot', function(req, res) {
                             "value": response.data.tracks.items[0].track_number,
                             "short": "false"
                         }],
+                        "actions": [
+                            {
+                                "name": "Nummer afspelen",
+                                "text": "Afspelen",
+                                "type": "button",
+                                "value": response.data.tracks.items[0].uri
+                            }
+                        ],
                         "thumb_url": response.data.tracks.items[0].album.images[0].url,
                     }]
                 }
@@ -185,7 +212,7 @@ app.post('/artevelde-bot', function(req, res) {
                         }],
                         "actions": [
                             {
-                                "name": "Afspelen",
+                                "name": "Afspeellijst afspelen",
                                 "text": "Afspelen",
                                 "type": "button",
                                 "value": response.data.playlists.items[0].uri
@@ -299,7 +326,25 @@ app.post('/actions', urlencodedParser, (req, res) =>{
     res.status(200).end() // best practice to respond with 200 status
     var actionJSONPayload = JSON.parse(req.body.payload) // parse URL-encoded payload JSON string
 
-    if (actionJSONPayload.actions[0].name === "Afspelen") {
+    if (actionJSONPayload.actions[0].name === "Afspeellijst afspelen") {
+        var message = {
+            "text": actionJSONPayload.user.name + " heeft op " + actionJSONPayload.actions[0].name + " gedrukt.",
+            "replace_original": false
+        }
+    }
+    else if (actionJSONPayload.actions[0].name === "Nummer afspelen") {
+        var message = {
+            "text": actionJSONPayload.user.name + " heeft op " + actionJSONPayload.actions[0].name + " gedrukt.",
+            "replace_original": false
+        }
+    }
+    else if (actionJSONPayload.actions[0].name === "Artiest afspelen") {
+        var message = {
+            "text": actionJSONPayload.user.name + " heeft op " + actionJSONPayload.actions[0].name + " gedrukt.",
+            "replace_original": false
+        }
+    }
+    else if (actionJSONPayload.actions[0].name === "Album afspelen") {
         var message = {
             "text": actionJSONPayload.user.name + " heeft op " + actionJSONPayload.actions[0].name + " gedrukt.",
             "replace_original": false
@@ -313,40 +358,6 @@ app.post('/actions', urlencodedParser, (req, res) =>{
     }
     sendMessageToSlackResponseURL(actionJSONPayload.response_url, message)
 })
-
-// // WeatherBot
-// app.post('/weather-bot', function(req, res) {
-//     var city = req.body.result &&
-//                 req.body.result.parameters &&
-//                 req.body.result.parameters.geoCity ? 
-//                 req.body.result.parameters.geoCity.trim() : 
-//                 "Seems like some problem. Speak again.";
-//     weather(city).then(response => { 
-//         var slack_message = {
-//             "text": 'The temperature in ' + city + '. Please give me another city!',
-//             "attachments": [{
-//                 "color": "#366abc",
-//                 "fields": [{
-//                     "title": "Temperature",
-//                     "value": response.item.condition.temp + ' °C',
-//                     "short": "false"
-//                 }],
-//             }],
-//         }
-//         return res.json({
-//             speech: "speech",
-//             displayText: "speech",
-//             source: 'weather-bot',
-//             data: {
-//                 "slack": slack_message,
-//             }
-//         });
-//     }).catch(err => {
-//         console.log('ERROR Yahoo weather is broken!!');
-//     });
-
-// });
-
 
 app.listen((process.env.PORT || 8000), function() {
     console.log("Server up and listening");
