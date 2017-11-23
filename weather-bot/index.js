@@ -4,26 +4,28 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const weather = require('yahoo-weather');
 const app = express();
+var request = require('request')
 var axios = require('axios');
+var urlOpener = require('openurl');
 
+// Helpers
 app.use(bodyParser.urlencoded({
     extended: true
 }));
 
 app.use(bodyParser.json());
 
+var urlencodedParser = bodyParser.urlencoded({ extended: false })
 
+//artevelde-bot
+app.post('/artevelde-bot', function(req, res) {
 
- 
-//MusicBot
-app.post('/music-bot', function(req, res) {
-
-    var config = {
+    var configSpotify = {
         headers: {
             'Host': 'api.spotify.com',
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer BQDypKOkw32MbfjyZfq-T_w5S1ZS7nBJYY96RsVm_sDlTL4k3QHHQov39M6r_Z6qYPX8eKze-64TK3Fh6hrmDrKfRYRZ_-hRhP-3ndfLEEl7yVc5nTylf0o5Cp-Qz2_4triHmhTwV6e-r1TQsi0T6Uito4h-TpFI9o7a-pRz0kNH3pix18fRVs5pIiaP38Aq8vWI5gAcc191GC4YxfHh76hntriGVcwGD7EYr_ly_HLqZo-0zZEaMNIpCXNDqHGVklilqw'
+            'Authorization': 'Bearer BQCIk27YHx_0Mo1WIFrLKQq3MhfWgwfvt_EZ5kQSVVH8gXG0uRhWDHk57SmBXCLzNDVpExA_ftRBPScdamxv3F_8qVhszErOru25AkO0htePoieUdDrObiZEJjTRzRuRXHgDUkKAvUvEcCbDJqvpvfMyOUCnnofRDFPx2cP_vpP_XaqlZhhqbME6MTu96ShtVupU06dYaqRoiXtM4ru4BNjB-6zHOqysTRrNUtUJitklGyjE2tWjV_ahMpxjmC4fTqlwNw'
         }
     };
 
@@ -31,7 +33,7 @@ app.post('/music-bot', function(req, res) {
         
         var artist = req.body.result.parameters.artist.trim();
 
-        axios.get('https://api.spotify.com/v1/search?q=' + artist + '&type=artist', config)
+        axios.get('https://api.spotify.com/v1/search?q=' + artist + '&type=artist', configSpotify)
         .then(response => { 
             if (response.data.artists.total === 0) {
                 var slack_message = {
@@ -67,7 +69,7 @@ app.post('/music-bot', function(req, res) {
     }
     else if (req.body.result && req.body.result.parameters && req.body.result.parameters.album) {
         var album = req.body.result.parameters.album.trim();
-        axios.get('https://api.spotify.com/v1/search?q=' + album + '&type=album', config)
+        axios.get('https://api.spotify.com/v1/search?q=' + album + '&type=album', configSpotify)
         .then(response => {
             if (response.data.albums.total === 0) {
                 var slack_message = {
@@ -107,7 +109,7 @@ app.post('/music-bot', function(req, res) {
     }
     else if (req.body.result && req.body.result.parameters && req.body.result.parameters.track) {
         var track = req.body.result.parameters.track.trim();
-        axios.get('https://api.spotify.com/v1/search?q=' + track + '&type=track', config)
+        axios.get('https://api.spotify.com/v1/search?q=' + track + '&type=track', configSpotify)
         .then(response => {
             if (response.data.tracks.total === 0) {
                 var slack_message = {
@@ -158,7 +160,7 @@ app.post('/music-bot', function(req, res) {
     }
     else if (req.body.result && req.body.result.parameters && req.body.result.parameters.playlist) {
         var playlist = req.body.result.parameters.playlist.trim();
-        axios.get('https://api.spotify.com/v1/search?q=' + playlist + '&type=playlist', config)
+        axios.get('https://api.spotify.com/v1/search?q=' + playlist + '&type=playlist', configSpotify)
         .then(response => {
             if (response.data.playlists.total === 0) {
                 var slack_message = {
@@ -170,6 +172,7 @@ app.post('/music-bot', function(req, res) {
                     "text": "Resultaat voor de playlist: " + playlist,
                     "attachments": [{
                         "color": "#366abc",
+                        "callback_id": response.data.playlists.items[0].uri,
                         "fields": [{
                             "title": "Afspeellijst",
                             "value": response.data.playlists.items[0].name,
@@ -180,9 +183,44 @@ app.post('/music-bot', function(req, res) {
                             "value": response.data.playlists.items[0].owner.display_name,
                             "short": "false"
                         }],
+                        "actions": [
+                            {
+                                "name": "Afspelen",
+                                "text": "Afspelen",
+                                "type": "button",
+                                "value": response.data.playlists.items[0].uri
+                            }
+                        ],
                         "thumb_url": response.data.playlists.items[0].images[0].url,
                     }]
                 }
+            }
+            return res.json({
+                speech: "speech",
+                displayText: "speech",
+                source: 'weather-bot',
+                data: {
+                    "slack": slack_message,
+                }
+            });
+        })
+        .catch(error => {
+            console.log(error);
+        });
+    }
+    else if (req.body.result && req.body.result.parameters && req.body.result.parameters.geoCity) {
+        var city = req.body.result.parameters.geoCity.trim();
+        weather(city).then(response => { 
+            var slack_message = {
+                "text": 'Het weer voor de stad: ' + city + '.',
+                "attachments": [{
+                    "color": "#366abc",
+                    "fields": [{
+                        "title": "Temperature",
+                        "value": response.item.condition.temp + ' °C',
+                        "short": "false"
+                    }],
+                }],
             }
             return res.json({
                 speech: "speech",
@@ -241,56 +279,210 @@ app.post('/music-bot', function(req, res) {
 });
 
 
-// WeatherBot
-app.post('/weather-bot', function(req, res) {
-    var city = req.body.result &&
-                req.body.result.parameters &&
-                req.body.result.parameters.geoCity ? 
-                req.body.result.parameters.geoCity.trim() : 
-                "Seems like some problem. Speak again.";
-    weather(city).then(response => { 
-        var slack_message = {
-            "text": 'The temperature in ' + city + '. Please give me another city!',
-            "attachments": [{
-                "color": "#366abc",
-                "fields": [{
-                    "title": "Temperature",
-                    "value": response.item.condition.temp + ' °C',
-                    "short": "false"
-                }],
-            }],
+function sendMessageToSlackResponseURL(responseURL, JSONmessage){
+    var postOptions = {
+        uri: responseURL,
+        method: 'POST',
+        headers: {
+            'Content-type': 'application/json'
+        },
+        json: JSONmessage,
+    }
+    request(postOptions, (error, response, body) => {
+        if (error){
+            // handle errors as you see fit
         }
-        return res.json({
-            speech: "speech",
-            displayText: "speech",
-            source: 'weather-bot',
-            data: {
-                "slack": slack_message,
-            }
-        });
-    }).catch(err => {
-        console.log('ERROR Yahoo weather is broken!!');
-    });
+    })
+}
+// Actions
+app.post('/actions', urlencodedParser, (req, res) =>{
+    res.status(200).end() // best practice to respond with 200 status
+    var actionJSONPayload = JSON.parse(req.body.payload) // parse URL-encoded payload JSON string
 
-});
+    if (actionJSONPayload.actions[0].name === "Afspelen") {
+        var message = {
+            "text": actionJSONPayload.user.name + " heeft op " + actionJSONPayload.actions[0].name + " gedrukt.",
+            "replace_original": false
+        }
+    }
+    else {
+        var message = {
+            "text": "Er liep iets verkeerd.",
+            "replace_original": false
+        }
+    }
+    sendMessageToSlackResponseURL(actionJSONPayload.response_url, message)
+})
 
+// // WeatherBot
+// app.post('/weather-bot', function(req, res) {
+//     var city = req.body.result &&
+//                 req.body.result.parameters &&
+//                 req.body.result.parameters.geoCity ? 
+//                 req.body.result.parameters.geoCity.trim() : 
+//                 "Seems like some problem. Speak again.";
+//     weather(city).then(response => { 
+//         var slack_message = {
+//             "text": 'The temperature in ' + city + '. Please give me another city!',
+//             "attachments": [{
+//                 "color": "#366abc",
+//                 "fields": [{
+//                     "title": "Temperature",
+//                     "value": response.item.condition.temp + ' °C',
+//                     "short": "false"
+//                 }],
+//             }],
+//         }
+//         return res.json({
+//             speech: "speech",
+//             displayText: "speech",
+//             source: 'weather-bot',
+//             data: {
+//                 "slack": slack_message,
+//             }
+//         });
+//     }).catch(err => {
+//         console.log('ERROR Yahoo weather is broken!!');
+//     });
 
-// EchoBot
-app.post('/echo', function(req, res) {
-    var speech = req.body.result &&
-                 req.body.result.parameters &&
-                 req.body.result.parameters.echoText ? 
-                 req.body.result.parameters.echoText : 
-                 "Seems like some problem. Speak again.";
-    return res.json({
-        speech: speech,
-        displayText: speech,
-        source: 'weather-bot-wot'
-    });
-});
+// });
+
 
 app.listen((process.env.PORT || 8000), function() {
     console.log("Server up and listening");
 });
 
 
+
+// RESPONSE BUTTONS
+// {
+// 	"speech": {
+// 		"type": "interactive_message",
+// 		"actions": [{
+// 			"name": "play",
+// 			"type": "button",
+// 			"value": "play"
+// 		}],
+// 		"callback_id": "playlist",
+// 		"team": {
+// 			"id": "T7P1W5S68",
+// 			"domain": "nmd-bots"
+// 		},
+// 		"channel": {
+// 			"id": "D7W4BDXUK",
+// 			"name": "directmessage"
+// 		},
+// 		"user": {
+// 			"id": "U7NEHUNU9",
+// 			"name": "nielcapp1"
+// 		},
+// 		"action_ts": "1511431470.196854",
+// 		"message_ts": "1511431468.000079",
+// 		"attachment_id": "1",
+// 		"token": "C4O9XcrLHY70vtw8el3m96Bd",
+// 		"is_app_unfurl": false,
+// 		"original_message": {
+// 			"text": "Resultaat voor de playlist: Studio Brussel Switch",
+// 			"username": "WeatherBot",
+// 			"bot_id": "B7VLS7NCR",
+// 			"attachments": [{
+// 				"callback_id": "playlist",
+// 				"id": 1,
+// 				"thumb_height": 300,
+// 				"thumb_width": 300,
+// 				"thumb_url": "https://pl.scdn.co/images/pl/default/20a1bca8e947b583b0d4d0afe0e8f46da6073510",
+// 				"color": "366abc",
+// 				"fields": [{
+// 						"title": "Afspeellijst",
+// 						"value": "Studio Brussel: Switch",
+// 						"short": true
+// 					},
+// 					{
+// 						"title": "Eigenaar afspeellijst",
+// 						"value": "Studio Brussel",
+// 						"short": true
+// 					}
+// 				],
+// 				"actions": [{
+// 					"id": "1",
+// 					"name": "play",
+// 					"text": "Afspelen",
+// 					"type": "button",
+// 					"value": "play",
+// 					"style": ""
+// 				}],
+// 				"fallback": "[no preview available]"
+// 			}],
+// 			"type": "message",
+// 			"subtype": "bot_message",
+// 			"ts": "1511431468.000079"
+// 		},
+// 		"response_url": "https://hooks.slack.com/actions/T7P1W5S68/276176851569/FK6euqIRIPO9oSbuaZb4WTGl",
+// 		"trigger_id": "277769496679.261064196212.bf9e6095bdb11561af0f1e6ee80e0250"
+// 	},
+// 	"displayText": {
+// 		"type": "interactive_message",
+// 		"actions": [{
+// 			"name": "play",
+// 			"type": "button",
+// 			"value": "play"
+// 		}],
+// 		"callback_id": "playlist",
+// 		"team": {
+// 			"id": "T7P1W5S68",
+// 			"domain": "nmd-bots"
+// 		},
+// 		"channel": {
+// 			"id": "D7W4BDXUK",
+// 			"name": "directmessage"
+// 		},
+// 		"user": {
+// 			"id": "U7NEHUNU9",
+// 			"name": "nielcapp1"
+// 		},
+// 		"action_ts": "1511431470.196854",
+// 		"message_ts": "1511431468.000079",
+// 		"attachment_id": "1",
+// 		"token": "C4O9XcrLHY70vtw8el3m96Bd",
+// 		"is_app_unfurl": false,
+// 		"original_message": {
+// 			"text": "Resultaat voor de playlist: Studio Brussel Switch",
+// 			"username": "WeatherBot",
+// 			"bot_id": "B7VLS7NCR",
+// 			"attachments": [{
+// 				"callback_id": "playlist",
+// 				"id": 1,
+// 				"thumb_height": 300,
+// 				"thumb_width": 300,
+// 				"thumb_url": "https://pl.scdn.co/images/pl/default/20a1bca8e947b583b0d4d0afe0e8f46da6073510",
+// 				"color": "366abc",
+// 				"fields": [{
+// 						"title": "Afspeellijst",
+// 						"value": "Studio Brussel: Switch",
+// 						"short": true
+// 					},
+// 					{
+// 						"title": "Eigenaar afspeellijst",
+// 						"value": "Studio Brussel",
+// 						"short": true
+// 					}
+// 				],
+// 				"actions": [{
+// 					"id": "1",
+// 					"name": "play",
+// 					"text": "Afspelen",
+// 					"type": "button",
+// 					"value": "play",
+// 					"style": ""
+// 				}],
+// 				"fallback": "[no preview available]"
+// 			}],
+// 			"type": "message",
+// 			"subtype": "bot_message",
+// 			"ts": "1511431468.000079"
+// 		},
+// 		"response_url": "https://hooks.slack.com/actions/T7P1W5S68/276176851569/FK6euqIRIPO9oSbuaZb4WTGl",
+// 		"trigger_id": "277769496679.261064196212.bf9e6095bdb11561af0f1e6ee80e0250"
+// 	},
+// 	"source": "weather-bot-wot"
+// }
