@@ -14,10 +14,7 @@
 /* eslint-disable */
 export default {
   name: 'app',
-  created() {
-    // var el = document.getElementsByClassName('loader');
-    // el.parentElement.removeChild(el);
-  }
+  created() {}
 }
 </script>
 

@@ -62,7 +62,6 @@
 /* eslint-disable */
 import axios from 'axios'
 import firebase from 'firebase'
-import VueFire from 'vuefire'
 
 export default {
   name: 'app',

@@ -1,6 +1,6 @@
 # bot-agency-dashboard
 
-> Bot Agency Dashboard (BAD)
+> bot-agency-dashboard
 
 ## Build Setup
 

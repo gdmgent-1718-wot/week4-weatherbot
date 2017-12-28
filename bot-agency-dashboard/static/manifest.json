@@ -1,6 +1,6 @@
 {
   "name": "bot-agency-dashboard",
-  "short_name": "BAD",
+  "short_name": "bot-agency-dashboard",
   "icons": [
     {
       "src": "/static/img/icons/android-chrome-192x192.png",
