@@ -52,7 +52,7 @@
 				<div class="image"></div>
 			</div>
 			<div class="item item-7">
-				<div class="image"></div>
+				<div id="map"></div>
 			</div>
 		</div>
 	</div>
@@ -68,7 +68,7 @@ export default {
 	data () {
 		return {
 			title: 'Dashboard',
-			token: '',
+			googleApiKey: 'AIzaSyCp5XnmC_WkpgsLgLNQSOMAoyHZdu-MDms',
 			blocks: {
 				songs: {
 					prev: {
@@ -109,11 +109,27 @@ export default {
 		firebase.initializeApp(this.config)
 
 		this.updateDataOnTrigger()
+		this.deleteLastItem()
 		this.update()
+		this.getGeoLocation()
 	},
 	methods: {
 		login() {
 			window.location.href = 'https://spotify-authentification.herokuapp.com/'
+		},
+		getGeoLocation() {
+			console.log('Trying to get your geolocation...')
+			axios.post('https://www.googleapis.com/geolocation/v1/geolocate?key=' + this.googleApiKey)
+			.then((response) => {
+				var data = response.data
+				firebase.database().ref('geoloc').set({
+					lat: data.location.lat,
+					lng: data.location.lng,
+					accuracy: data.accuracy
+				})
+			}).catch((e) => {
+				console.error(e);
+			}); 
 		},
 		getData() {
 			console.log('Getting data from firebase ...')
@@ -121,16 +137,6 @@ export default {
 			var citiesArray = this.blocks.weather.cities
 
 			var refCities = database.ref('cities')
-
-			refCities.once("value").then(function(snapshot) {
-				var datas = snapshot.numChildren()
-				if (datas >= 6) {
-					console.log(datas + " data's available in firebase.")
-					refCities.orderByValue().limitToFirst(1).on("value", function(snapshot) {
-						console.log(snapshot.val())
-					})
-				}
-			});
 
 			refCities.orderByValue().limitToLast(3).on("value", function(snapshot) {
 				snapshot.forEach(function(data) {
@@ -153,7 +159,19 @@ export default {
 				});
 			});
 
-		}, 
+		},
+		deleteLastItem() {
+			var citiesRef = firebase.database().ref('cities')
+			var ref = firebase.database().ref('cities').limitToFirst(1)
+
+			citiesRef.once("value").then(function(snapshot) {
+				if (snapshot.numChildren() > 3) {
+					ref.once("value", function(snapshot) {
+						console.log(snapshot.val())
+					})
+				}
+			});
+		},
 		update() {
 			var database = firebase.database()
 			var citiesArray = this.blocks.weather.cities
@@ -174,6 +192,12 @@ export default {
 </script>
 
 <style>
+	#map {
+		width: 100%;
+		height: 100%;
+		background-color: grey;
+	}
+
 	h1 {
 		font-weight: normal;
 	}
@@ -290,8 +314,5 @@ export default {
 		grid-row-start: 2;
 		grid-row-end: 5;
 		background-color: #ABACAC;
-		background: url('../assets/maps.png');
-		background-size: cover;
-		background-position: center center;
 	}
 </style>
