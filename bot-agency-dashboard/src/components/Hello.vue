@@ -17,7 +17,18 @@
 
 			<!-- IF album -->
 			<div v-if="blocks.spotify.response[0].type === 'album'" class="item item-2">
-				<div class="album">
+				<div class="detail">
+					<div class="head">
+						<img width="80" :src="blocks.spotify.response[0].images[1].url">
+						<div>
+							<h1 class="title">{{ blocks.spotify.response[0].name }}</h1>
+							<p>{{ blocks.spotify.response[0].owner.display_name }}</p>
+						</div>
+					</div>
+					<ul>
+						<li>Tracks: <strong>{{ blocks.spotify.response[0].tracks.total }}</strong></li>
+						<li>Followers: <strong>{{ blocks.spotify.response[0].followers.total }}</strong></li>
+					</ul>
 					<h2>{{ blocks.spotify.response[0].type }}</h2>
 					<div class="image" :style="{ 'background-image': 'url(' + blocks.spotify.response[0].images[0].url + ')' }"></div>
 				</div>
@@ -25,8 +36,8 @@
 
 			<!-- IF playlist -->
 			<div v-if="blocks.spotify.response[0].type === 'playlist'" class="item item-2">
-				<div class="playlist">
-					<div class="playlist-head">
+				<div class="detail">
+					<div class="head">
 						<img width="80" :src="blocks.spotify.response[0].images[1].url">
 						<div>
 							<h1 class="title">{{ blocks.spotify.response[0].name }}</h1>
@@ -43,27 +54,15 @@
 			</div>
 
 			<!-- CITIES -->
-			<div class="item item-4">
-				<div class="city">
-					<p class="temp">{{ blocks.weather.cities[2].temp || 0 }} °C</p>
-					<p class="name">{{ blocks.weather.cities[2].name || null }}</p>
+			<template v-for="(city, index) in blocks.weather.cities">
+				<div :class="['item item-' + (index + 4)]">
+					<div class="city">
+						<p class="temp">{{ city.temp }} °C</p>
+						<p class="name">{{ city.name }}</p>
+					</div>
+					<div class="image"></div>
 				</div>
-				<div class="image"></div>
-			</div>
-			<div class="item item-5">
-				<div class="city">
-					<p class="temp">{{ blocks.weather.cities[1].temp || 0 }} °C</p>
-					<p class="name">{{ blocks.weather.cities[1].name || null }}</p>
-				</div>
-				<div class="image"></div>
-			</div>
-			<div class="item item-6">
-				<div class="city">
-					<p class="temp">{{ blocks.weather.cities[0].temp || 0 }} °C</p>
-					<p class="name">{{ blocks.weather.cities[0].name || null }}</p>
-				</div>
-				<div class="image"></div>
-			</div>
+			</template>
 
 			<!-- TRAFFIC -->
 			<div class="item item-7">
@@ -305,7 +304,7 @@ export default {
 		color: #35495E;
 	}
 	.fas.xs {
-		font-size: 7px;
+		font-size: 5px;
 	}
 
 	.container {
@@ -335,10 +334,10 @@ export default {
 		}
 	} 
 
-	.playlist {
+	.detail {
 		position: relative;
 		height: 100%;
-		.playlist-head {
+		.head {
 			h1 { 
 				color: white;
 				margin: 0;
@@ -392,7 +391,7 @@ export default {
 			grid-column-end: 5;
 			grid-row-start: 1;
 			grid-row-end: 1;
-			background-color: rgba(0,0,0,.65);
+			background-color: rgba(0,0,0,.85);
 			.image {
 				position: absolute;
 				top: -16px;
@@ -457,14 +456,18 @@ export default {
 			.route {
 				padding-top: 120px;
 				p {
-					margin: 2px 0;
+					margin: 0;
+					&.start {}
+					&.end { margin-top: 4px; }
+				}
+				i {
+					width: 20px;
+					text-align: center;
 				}
 			}
 			.dots {
-				padding-left: 3px;
 				div {
 					line-height: 7px;
-					margin: 3px 0;
 				}
 			}
 			.vehicle {
