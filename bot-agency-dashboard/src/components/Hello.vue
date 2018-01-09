@@ -68,8 +68,32 @@
 			<!-- TRAFFIC -->
 			<div class="item item-7">
 				<div class="dur-dis">
-					<p>{{  }}</p>
-					<p>{{  }}</p>
+					<p class="dis">{{ blocks.traffic.data[0] }}</p>
+					<p class="dur">{{ blocks.traffic.data[1] }}</p>
+				</div>
+
+				<div class="route">
+					<p class="start">
+						<i class="far fa-dot-circle"></i> 
+						{{ splitAdres(blocks.traffic.data[3]) }}
+					</p>
+					<div class="dots">
+						<div><i class="fas fa-circle xs"></i></div>
+						<div><i class="fas fa-circle xs"></i></div>
+						<div><i class="fas fa-circle xs"></i></div>
+					</div>
+					<p class="end">
+						<i class="fas fa-map-marker-alt"></i>
+						{{ splitAdres(blocks.traffic.data[4]) }}
+					</p>
+				</div>
+				<div class="vehicle">
+					<template v-if="blocks.traffic.data[2] === 'Auto'">
+						<i class="fas fa-car fa-4x"></i>
+					</template>
+					<template v-if="blocks.traffic.data[2] === 'Bus'">
+						<i class="fas fa-bus fa-4x"></i>
+					</template>
 				</div>
 			</div>
 		</div>
@@ -119,10 +143,27 @@ export default {
 		this.getGeoLocation()
 		this.updateDataOnTrigger()
 		this.deleteLastItem()
+		
+	},
+	filters: {
+		splitAdres: function (value) {
+			if (value) {
+				var str = value
+				var split = str.split(',', 1)[0]
+				return split
+			}
+		}
 	},
 	methods: {
 		login() {
 			window.location.href = 'https://spotify-authentification.herokuapp.com/'
+		},
+		splitAdres (value) {
+			if (value) {
+				var str = value
+				var split = str.split(',', 1)[0]
+				return split
+			}
 		},
 		msToTime(s) {
 			var ms = s % 1000;
@@ -178,7 +219,7 @@ export default {
 
 			refTraffic.orderByValue().on("value", function(snapshot) {
 				snapshot.forEach(function(data) {
-					spotifyArray.push(data.val());
+					trafficArray.push(data.val());
 				});
 			});
 		},
@@ -187,9 +228,11 @@ export default {
 
 			var cities = this.blocks.weather.cities
 			var spotify = this.blocks.spotify.response
+			var traffic = this.blocks.traffic.data
 
 			var refCities = database.ref('cities')
 			var refSpotify = database.ref('spotify')
+			var refTraffic = database.ref('traffic')
 
 			refCities.on('child_changed', function(d) {
 				refCities.orderByValue().limitToLast(3).on("value", function(snapshot) {
@@ -205,6 +248,15 @@ export default {
 					spotify.length = 0
 					snapshot.forEach(function(data) {
 						spotify.push(data.val());
+					});
+				});
+			});
+
+			refTraffic.on('child_added', function(d) {
+				refTraffic.orderByValue().on("value", function(snapshot) {
+					traffic.length = 0
+					snapshot.forEach(function(data) {
+						traffic.push(data.val());
 					});
 				});
 			});
@@ -250,8 +302,12 @@ export default {
 		color: white;
 	}
 	a {
-	color: #35495E;
+		color: #35495E;
 	}
+	.fas.xs {
+		font-size: 7px;
+	}
+
 	.container {
 		display: grid;
 		grid-template-columns: 25vw 25vw 25vw 25vw;
@@ -376,7 +432,45 @@ export default {
 			grid-column-end: 5;
 			grid-row-start: 2;
 			grid-row-end: 5;
-			background-color: #ABACAC;
+			background-color: #242424;
+			.dur-dis {
+				position: absolute;
+				top: 16px;
+				right: 16px;
+				border-radius: 50%;
+				height: 100px;
+				width: 100px;
+				background-color: white;
+				p {
+					color: #242424;
+					text-align: center;
+					margin: 0;
+					&.dis {
+						font-size: 1.2em;
+						margin-top: 27px;
+						font-weight: bold;
+					}
+					&.dur {
+					}
+				}
+			}
+			.route {
+				padding-top: 120px;
+				p {
+					margin: 2px 0;
+				}
+			}
+			.dots {
+				padding-left: 3px;
+				div {
+					line-height: 7px;
+					margin: 3px 0;
+				}
+			}
+			.vehicle {
+				position: absolute;
+				bottom: 16px;
+			}
 		}
 	}
 </style>
