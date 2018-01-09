@@ -2,57 +2,75 @@
 	<div id="dashboard">
 		<div class="container">
 			<div class="loader"></div>
+
+			<!-- Tracklist -->
 			<div class="item item-1">
-				<div class="song">
-					<p class="title">{{ blocks.songs.prev.songTitle }}</p>
-					<p class="artist">{{ blocks.songs.prev.songArtist }}</p>
-				</div>
-				<h2>{{ blocks.songs.prev.title }}</h2>
-				<div class="image"></div>
+				<ol>
+					<li v-for="value in blocks.spotify.response[0].tracks.items">
+						<strong>{{ value.track.artists[0].name }} - </strong>
+						{{ value.track.name }}
+						<div class="duration">{{ msToTime(value.track.duration_ms) }}</div>
+						</li>
+				</ol>
+				<h2>Tracklist</h2>
 			</div>
-			<div class="item item-2">
-				<div class="song">
-					<p class="title">{{ blocks.songs.now.songTitle }}</p>
-					<p class="artist">{{ blocks.songs.now.songArtist }}</p>
+
+			<!-- IF album -->
+			<div v-if="blocks.spotify.response[0].type === 'album'" class="item item-2">
+				<div class="album">
+					<h2>{{ blocks.spotify.response[0].type }}</h2>
+					<div class="image" :style="{ 'background-image': 'url(' + blocks.spotify.response[0].images[0].url + ')' }"></div>
 				</div>
-				<h2>{{ blocks.songs.now.title }}</h2>
-				<div class="image"></div>
 			</div>
-			<div class="item item-3">
-				<div class="song">
-					<p class="title">{{ blocks.songs.next.songTitle }}</p>
-					<p class="artist">{{ blocks.songs.next.songTitle }}</p>
+
+			<!-- IF playlist -->
+			<div v-if="blocks.spotify.response[0].type === 'playlist'" class="item item-2">
+				<div class="playlist">
+					<div class="playlist-head">
+						<img width="80" :src="blocks.spotify.response[0].images[1].url">
+						<div>
+							<h1 class="title">{{ blocks.spotify.response[0].name }}</h1>
+							<p>{{ blocks.spotify.response[0].owner.display_name }}</p>
+						</div>
+					</div>
+					<ul>
+						<li>Tracks: <strong>{{ blocks.spotify.response[0].tracks.total }}</strong></li>
+						<li>Followers: <strong>{{ blocks.spotify.response[0].followers.total }}</strong></li>
+					</ul>
+					<h2>{{ blocks.spotify.response[0].type }}</h2>
+					<div class="image" :style="{ 'background-image': 'url(' + blocks.spotify.response[0].images[0].url + ')' }"></div>
 				</div>
-				<h2>{{ blocks.songs.next.title }}</h2>
-				<div class="image"></div>
-				<!--<p>Login</p>
-				<iframe src="https://spotify-auth-bad.herokuapp.com/" width="100%" style="height: 36px;border: none;"></iframe>
-				<a class="btn btn-primary" v-on:click="login">Log in with Spotify</a>
-				<button class="btn btn-default" id="obtain-new-token">Obtain new token using the refresh token</button>-->
 			</div>
+
+			<!-- CITIES -->
 			<div class="item item-4">
 				<div class="city">
-					<p class="temp">{{ blocks.weather.cities[2].temp }} °C</p>
-					<p class="name">{{ blocks.weather.cities[2].name }}</p>
+					<p class="temp">{{ blocks.weather.cities[2].temp || 0 }} °C</p>
+					<p class="name">{{ blocks.weather.cities[2].name || null }}</p>
 				</div>
 				<div class="image"></div>
 			</div>
 			<div class="item item-5">
 				<div class="city">
-					<p class="temp">{{ blocks.weather.cities[1].temp }} °C</p>
-					<p class="name">{{ blocks.weather.cities[1].name }}</p>
+					<p class="temp">{{ blocks.weather.cities[1].temp || 0 }} °C</p>
+					<p class="name">{{ blocks.weather.cities[1].name || null }}</p>
 				</div>
 				<div class="image"></div>
 			</div>
 			<div class="item item-6">
 				<div class="city">
-					<p class="temp">{{ blocks.weather.cities[0].temp }} °C</p>
-					<p class="name">{{ blocks.weather.cities[0].name }}</p>
+					<p class="temp">{{ blocks.weather.cities[0].temp || 0 }} °C</p>
+					<p class="name">{{ blocks.weather.cities[0].name || null }}</p>
 				</div>
 				<div class="image"></div>
 			</div>
+
+			<!-- TRAFFIC -->
 			<div class="item item-7">
-				<div id="map"></div>
+				<div class="dur-dis">
+					<p>{{  }}</p>
+					<p>{{  }}</p>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -70,25 +88,14 @@ export default {
 			title: 'Dashboard',
 			googleApiKey: 'AIzaSyCp5XnmC_WkpgsLgLNQSOMAoyHZdu-MDms',
 			blocks: {
-				songs: {
-					prev: {
-						title: 'Previous Track',
-						songTitle: 'Brihang',
-						songArtist: 'Kleine Dagen'
-					},
-					now: {
-						title: 'Now Playing',
-						songTitle: 'Get Lucky',
-						songArtist: 'Daft Punk'
-					},
-					next: {
-						title: 'Next Track',
-						songTitle: 'No One Knows',
-						songArtist: 'Queens Of The Stone Age'
-					}
+				spotify: {
+					response: []
 				},
 				weather: {
 					cities: []
+				},
+				traffic: {
+					data: []
 				}
 			},
 			config: {
@@ -99,7 +106,8 @@ export default {
 			client_id: '4088e29d220e4827a37bbc08f408bdce',
 			client_secret: '2c0f33ca417f4c8fb4669937ffc9f676',
 			redirect_uri: 'http%3A%2F%2Flocalhost%3A8080%2F%23%2F',
-			body: ''
+			body: '',
+			img: []
 		}
 	},
 	mounted: function() {
@@ -108,20 +116,34 @@ export default {
 	created () {
 		firebase.initializeApp(this.config)
 
+		this.getGeoLocation()
 		this.updateDataOnTrigger()
 		this.deleteLastItem()
-		this.update()
-		this.getGeoLocation()
 	},
 	methods: {
 		login() {
 			window.location.href = 'https://spotify-authentification.herokuapp.com/'
 		},
+		msToTime(s) {
+			var ms = s % 1000;
+			s = (s - ms) / 1000;
+			var secs = ('0' + s % 60).slice(-2);
+			s = (s - secs) / 60;
+			var mins = ('0' + s % 60).slice(-2);
+
+			return mins + ':' + secs;
+		},
+		getTrafficInfo() {
+			
+		},
 		getGeoLocation() {
-			console.log('Trying to get your geolocation...')
 			axios.post('https://www.googleapis.com/geolocation/v1/geolocate?key=' + this.googleApiKey)
 			.then((response) => {
 				var data = response.data
+				setTimeout(function() 
+				{ 
+					console.log(data)
+				}, 3000);
 				firebase.database().ref('geoloc').set({
 					lat: data.location.lat,
 					lng: data.location.lng,
@@ -135,69 +157,82 @@ export default {
 			console.log('Getting data from firebase ...')
 			var database = firebase.database()
 			var citiesArray = this.blocks.weather.cities
+			var spotifyArray = this.blocks.spotify.response
+			var trafficArray = this.blocks.traffic.data
 
 			var refCities = database.ref('cities')
-
+			var refSpotify = database.ref('spotify')
+			var refTraffic = database.ref('traffic')
+			
 			refCities.orderByValue().limitToLast(3).on("value", function(snapshot) {
 				snapshot.forEach(function(data) {
 					citiesArray.push(data.val());
 				});
 			});
+
+			refSpotify.orderByValue().on("value", function(snapshot) {
+				snapshot.forEach(function(data) {
+					spotifyArray.push(data.val());
+				});
+			});
+
+			refTraffic.orderByValue().on("value", function(snapshot) {
+				snapshot.forEach(function(data) {
+					spotifyArray.push(data.val());
+				});
+			});
 		},
 		updateDataOnTrigger() {
 			var database = firebase.database()
-			var citiesArray = this.blocks.weather.cities
+
+			var cities = this.blocks.weather.cities
+			var spotify = this.blocks.spotify.response
 
 			var refCities = database.ref('cities')
+			var refSpotify = database.ref('spotify')
 
-			refCities.on('child_changed', function(dataaa) {
+			refCities.on('child_changed', function(d) {
 				refCities.orderByValue().limitToLast(3).on("value", function(snapshot) {
 					citiesArray.length = 0
 					snapshot.forEach(function(data) {
-						citiesArray.push(data.val());
+						cities.push(data.val());
+					});
+				});
+			});
+
+			refSpotify.on('child_added', function(d) {
+				refSpotify.orderByValue().on("value", function(snapshot) {
+					spotify.length = 0
+					snapshot.forEach(function(data) {
+						spotify.push(data.val());
 					});
 				});
 			});
 
 		},
 		deleteLastItem() {
-			var citiesRef = firebase.database().ref('cities')
-			var ref = firebase.database().ref('cities').limitToFirst(1)
+			var database = firebase.database()
+
+			var citiesRef = database.ref('cities')
+			var refLastCity = database.ref('cities').limitToFirst(1)
 
 			citiesRef.once("value").then(function(snapshot) {
 				if (snapshot.numChildren() > 3) {
-					ref.once("value", function(snapshot) {
-						console.log(snapshot.val())
+					refLastCity.once("value").then(function(d) {
+						// d.remove()
 					})
+					// refLastCity.remove()
 				}
-			});
-		},
-		update() {
-			var database = firebase.database()
-			var citiesArray = this.blocks.weather.cities
-
-			var refCities = database.ref('cities')
-
-			refCities.on('child_added', function(dataaa) {
-				refCities.orderByValue().limitToLast(3).on("value", function(snapshot) {
-					citiesArray.length = 0
-					snapshot.forEach(function(data) {
-						citiesArray.push(data.val());
-					});
-				});
 			});
 		}
 	}
 }
 </script>
 
-<style>
-	#map {
-		width: 100%;
-		height: 100%;
-		background-color: grey;
+<style lang="scss">
+	body {
+	overflow: hidden;
 	}
-
 	h1 {
 		font-weight: normal;
 	}
@@ -218,101 +253,130 @@ export default {
 	color: #35495E;
 	}
 	.container {
-	display: grid;
-	grid-template-columns: 25vw 25vw 25vw 25vw;
-	grid-template-rows: calc(50vh - 28px) calc(50vh - 28px);
+		display: grid;
+		grid-template-columns: 25vw 25vw 25vw 25vw;
+		grid-template-rows: calc(50vh - 28px) calc(50vh - 28px);
 	}
+
 	.song,
 	.city {
 		text-align: center;
-		padding: calc(50vh / 2 - 56px) 0;
 		z-index: 9;
 		position: absolute;
 		width: calc(100% - 32px);
-		text-shadow: 1px 1px 2px rgba(0,0,0,.35)
+		text-shadow: 1px 1px 2px rgba(0,0,0,.35);
+		p {
+			text-transform: uppercase;
+			margin: 0;
+		}
 	}
-	.city p.temp {
-		font-size: 30px;
-		font-weight: bold;
+
+	.city {
+		padding: calc(50vh / 2 - 56px) 0;
+		p.temp {
+			font-size: 30px;
+			font-weight: bold;
+		}
+	} 
+
+	.playlist {
+		position: relative;
+		height: 100%;
+		.playlist-head {
+			h1 { 
+				color: white;
+				margin: 0;
+				font-weight: bold;
+				text-transform: uppercase;
+			}
+			img {
+				display: block;
+				float: left;
+				margin-right: 16px;
+			}
+		}
+		ul {
+			padding-left: 96px;
+			list-style: none;
+			margin-top: 64px;
+			li {
+				color: white;
+				line-height: 2em;
+			}
+		}
 	}
-	.song p,
-	.city p {
-		text-transform: uppercase;
-		margin: 0;
-	}
-	.song p.title {
-		font-weight: bold;
-		font-size: 30px;
-	}
-	.song p.artist {
-		font-size: 16px;
-	}
+
 	.item {
 		position: relative;
 		background-color: #eee;
 		padding: 16px;
-	}
-	.item.item-1 > .image,
-	.item.item-2 > .image, 
-	.item.item-3 > .image {
-		background: url('../assets/overlay.jpg');
-		position: absolute;
-		top: 0;
-		left: 0;
-		height: 100%;
-		width: 100%;
-		background-size: cover;
-		opacity: .15;
-	}
-	.item-1 {
-		grid-column-start: 1;
-		grid-column-end: 2;
-		grid-row-start: 1;
-		grid-row-end: 1;
-		background-color: #d81786;
-	}
-	.item-2 {
-		grid-column-start: 2;
-		grid-column-end: 4;
-		grid-row-start: 1;
-		grid-row-end: 1;
-		background-color: black;
-	}
-	.item-3 {
-		grid-column-start: 4;
-		grid-column-end: 5;
-		grid-row-start: 1;
-		grid-row-end: 1;
-		background-color: #ABACAC;
-	}
+		ol {
+			max-height: calc(100% - 60px);
+			overflow: hidden;
+			li {
+				position: relative;
+				color: white;
+				line-height: 2em;
+				.duration {
+					position: absolute;
+					right: 0;
+					top: 0;
+				}
+			}
+		}
+		&.item-1 {
+			grid-column-start: 1;
+			grid-column-end: 3;
+			grid-row-start: 1;
+			grid-row-end: 1;
+			background-color: #d81786;
+		}
+		&.item-2 {
+			grid-column-start: 3;
+			grid-column-end: 5;
+			grid-row-start: 1;
+			grid-row-end: 1;
+			background-color: rgba(0,0,0,.65);
+			.image {
+				position: absolute;
+				top: -16px;
+				left: -16px;
+				height: calc(100% + 32px);
+				width: calc(100% + 32px);
+				background-size: cover;
+				background-position: center;
+				z-index: -1;
+			}
+		}
 
-	/* BOTTOM ROW */
-	.item-4 {
-		grid-column-start: 1;
-		grid-column-end: 2;
-		grid-row-start: 2;
-		grid-row-end: 2;
-		background-color: #F7AD2A;
-	}
-	.item-5 {
-		grid-column-start: 2;
-		grid-column-end: 3;
-		grid-row-start: 2;
-		grid-row-end: 3;
-		background-color: #b1cc11;
-	}
-	.item-6 {
-		grid-column-start: 3;
-		grid-column-end: 4;
-		grid-row-start: 2;
-		grid-row-end: 4;
-		background-color: #1BAAC4;
-	}
-	.item-7 {
-		grid-column-start: 4;
-		grid-column-end: 5;
-		grid-row-start: 2;
-		grid-row-end: 5;
-		background-color: #ABACAC;
+		/* BOTTOM ROW */
+		&.item-4 {
+			grid-column-start: 1;
+			grid-column-end: 2;
+			grid-row-start: 2;
+			grid-row-end: 2;
+			background-color: #F7AD2A;
+		}
+		&.item-5 {
+			grid-column-start: 2;
+			grid-column-end: 3;
+			grid-row-start: 2;
+			grid-row-end: 3;
+			background-color: #b1cc11;
+		}
+		&.item-6 {
+			grid-column-start: 3;
+			grid-column-end: 4;
+			grid-row-start: 2;
+			grid-row-end: 4;
+			background-color: #1BAAC4;
+		}
+		&.item-7 {
+			grid-column-start: 4;
+			grid-column-end: 5;
+			grid-row-start: 2;
+			grid-row-end: 5;
+			background-color: #ABACAC;
+		}
 	}
 </style>
