@@ -67,14 +67,14 @@
 			<!-- TRAFFIC -->
 			<div class="item item-7">
 				<div class="dur-dis">
-					<p class="dis">{{ blocks.traffic.data[0] }}</p>
-					<p class="dur">{{ blocks.traffic.data[1] }}</p>
+					<p class="dis">{{ blocks.traffic.data[1].routes[0].legs[0].distance.text }}</p>
+					<p class="dur">{{ blocks.traffic.data[1].routes[0].legs[0].duration.text }}</p>
 				</div>
 
 				<div class="route">
 					<p class="start">
 						<i class="far fa-dot-circle"></i> 
-						{{ splitAdres(blocks.traffic.data[3]) }}
+						{{ splitAdres(blocks.traffic.data[1].routes[0].legs[0].start_address) }}
 					</p>
 					<div class="dots">
 						<div><i class="fas fa-circle xs"></i></div>
@@ -83,15 +83,21 @@
 					</div>
 					<p class="end">
 						<i class="fas fa-map-marker-alt"></i>
-						{{ splitAdres(blocks.traffic.data[4]) }}
+						{{ splitAdres(blocks.traffic.data[1].routes[0].legs[0].end_address) }}
 					</p>
 				</div>
 				<div class="vehicle">
-					<template v-if="blocks.traffic.data[2] === 'Auto'">
+					<template v-if="blocks.traffic.data[0] === 'Auto'">
 						<i class="fas fa-car fa-4x"></i>
 					</template>
-					<template v-if="blocks.traffic.data[2] === 'Bus'">
+					<template v-if="blocks.traffic.data[0] === 'Openbaar vervoer'">
 						<i class="fas fa-bus fa-4x"></i>
+					</template>
+					<template v-if="blocks.traffic.data[0] === 'Fiets'">
+						<i class="fas fa-bicycle fa-4x"></i>
+					</template>
+					<template v-if="blocks.traffic.data[0] === 'Te voet'">
+						<i class="fas fa-male fa-4x"></i>
 					</template>
 				</div>
 			</div>
@@ -143,15 +149,6 @@ export default {
 		this.updateDataOnTrigger()
 		this.deleteLastItem()
 		
-	},
-	filters: {
-		splitAdres: function (value) {
-			if (value) {
-				var str = value
-				var split = str.split(',', 1)[0]
-				return split
-			}
-		}
 	},
 	methods: {
 		login() {

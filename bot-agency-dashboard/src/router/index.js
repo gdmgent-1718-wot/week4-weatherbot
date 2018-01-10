@@ -1,15 +1,17 @@
+/* eslint-disable */
+
 import Vue from 'vue'
 import Router from 'vue-router'
-import Hello from '@/components/Hello'
+import Bad from '@/components/Bad'
 
 Vue.use(Router)
 
 export default new Router({
-  routes: [
-    {
-      path: '/',
-      name: 'Hello',
-      component: Hello
-    }
-  ]
+	routes: [
+		{
+			path: '/',
+			name: 'Bad',
+			component: Bad
+		}
+	]
 })
