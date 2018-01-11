@@ -4,13 +4,23 @@
 			<div class="loader"></div>
 
 			<!-- Tracklist -->
-			<div class="item item-1">
+			<div v-if="blocks.spotify.response[0].type === 'playlist'" class="item item-1">
 				<ol>
 					<li v-for="value in blocks.spotify.response[0].tracks.items">
 						<strong>{{ value.track.artists[0].name }} - </strong>
 						{{ value.track.name }}
 						<div class="duration">{{ msToTime(value.track.duration_ms) }}</div>
-						</li>
+					</li>
+				</ol>
+				<h2>Tracklist</h2>
+			</div>
+			<div v-if="blocks.spotify.response[0].type === 'album'" class="item item-1">
+				<ol>
+					<li v-for="value in blocks.spotify.response[0].tracks.items">
+						<strong>{{ value.artists[0].name }} - </strong>
+						{{ value.name }}
+						<div class="duration">{{ msToTime(value.duration_ms) }}</div>
+					</li>
 				</ol>
 				<h2>Tracklist</h2>
 			</div>
@@ -19,15 +29,14 @@
 			<div v-if="blocks.spotify.response[0].type === 'album'" class="item item-2">
 				<div class="detail">
 					<div class="head">
-						<img width="80" :src="blocks.spotify.response[0].images[1].url">
+						<img width="80" :src="blocks.spotify.response[0].images[0].url">
 						<div>
 							<h1 class="title">{{ blocks.spotify.response[0].name }}</h1>
-							<p>{{ blocks.spotify.response[0].owner.display_name }}</p>
+							<p>{{ blocks.spotify.response[0].artists[0].name }}</p>
 						</div>
 					</div>
 					<ul>
 						<li>Tracks: <strong>{{ blocks.spotify.response[0].tracks.total }}</strong></li>
-						<li>Followers: <strong>{{ blocks.spotify.response[0].followers.total }}</strong></li>
 					</ul>
 					<h2>{{ blocks.spotify.response[0].type }}</h2>
 					<div class="image" :style="{ 'background-image': 'url(' + blocks.spotify.response[0].images[0].url + ')' }"></div>
@@ -38,7 +47,7 @@
 			<div v-if="blocks.spotify.response[0].type === 'playlist'" class="item item-2">
 				<div class="detail">
 					<div class="head">
-						<img width="80" :src="blocks.spotify.response[0].images[1].url">
+						<img width="80" :src="blocks.spotify.response[0].images[0].url">
 						<div>
 							<h1 class="title">{{ blocks.spotify.response[0].name }}</h1>
 							<p>{{ blocks.spotify.response[0].owner.display_name }}</p>
@@ -54,15 +63,33 @@
 			</div>
 
 			<!-- CITIES -->
-			<template v-for="(city, index) in blocks.weather.cities">
-				<div :class="['item item-' + (index + 4)]">
-					<div class="city">
-						<p class="temp">{{ city.temp }} °C</p>
-						<p class="name">{{ city.name }}</p>
-					</div>
-					<div class="image"></div>
+			<div v-for="(city, index) in blocks.weather.cities.reverse()" :key="city.id" :class="['item item-' + (index + 4)]">
+				<div class="city">
+					<p class="temp">{{ city.temp }} °C</p>
+					<p class="name">{{ city.city }}</p>
 				</div>
-			</template>
+			</div>
+			<!-- <div class="item item-4">
+				<div class="city">
+					<p class="temp">{{ blocks.weather.cities[2].temp }} °C</p>
+					<p class="name">{{ blocks.weather.cities[2].city }}</p>
+				</div>
+				<div class="image"></div>
+			</div>
+			<div class="item item-5">
+				<div class="city">
+					<p class="temp">{{ blocks.weather.cities[1].temp }} °C</p>
+					<p class="name">{{ blocks.weather.cities[1].city }}</p>
+				</div>
+				<div class="image"></div>
+			</div>
+			<div class="item item-6">
+				<div class="city">
+					<p class="temp">{{ blocks.weather.cities[0].temp }} °C</p>
+					<p class="name">{{ blocks.weather.cities[0].city }}</p>
+				</div>
+				<div class="image"></div>
+			</div> -->
 
 			<!-- TRAFFIC -->
 			<div class="item item-7">
@@ -115,7 +142,6 @@ export default {
 	data () {
 		return {
 			title: 'Dashboard',
-			googleApiKey: 'AIzaSyCp5XnmC_WkpgsLgLNQSOMAoyHZdu-MDms',
 			blocks: {
 				spotify: {
 					response: []
@@ -134,21 +160,17 @@ export default {
 			},
 			client_id: '4088e29d220e4827a37bbc08f408bdce',
 			client_secret: '2c0f33ca417f4c8fb4669937ffc9f676',
-			redirect_uri: 'http%3A%2F%2Flocalhost%3A8080%2F%23%2F',
-			body: '',
-			img: []
+			redirect_uri: 'http%3A%2F%2Flocalhost%3A8080%2F%23%2F'
 		}
 	},
-	mounted: function() {
-		this.getData()
-	},
+	mounted: function() {},
 	created () {
 		firebase.initializeApp(this.config)
 
 		this.getGeoLocation()
+		this.getData()
 		this.updateDataOnTrigger()
 		this.deleteLastItem()
-		
 	},
 	methods: {
 		login() {
@@ -170,89 +192,76 @@ export default {
 
 			return mins + ':' + secs;
 		},
-		getTrafficInfo() {
-			
-		},
 		getGeoLocation() {
-			axios.post('https://www.googleapis.com/geolocation/v1/geolocate?key=' + this.googleApiKey)
-			.then((response) => {
-				var data = response.data
-				setTimeout(function() 
-				{ 
-					console.log(data)
-				}, 3000);
+			function getLocation() {
+				if (navigator.geolocation) {
+					navigator.geolocation.getCurrentPosition(showPosition);
+				} else {
+					console.log("Geolocation is not supported by this browser.")
+				}
+			}
+			function showPosition(position) {
 				firebase.database().ref('geoloc').set({
-					lat: data.location.lat,
-					lng: data.location.lng,
-					accuracy: data.accuracy
+					lat: position.coords.latitude,
+					lng: position.coords.longitude,
+					accuracy: position.coords.accuracy
 				})
-			}).catch((e) => {
-				console.error(e);
-			}); 
+			}
+			getLocation()
 		},
 		getData() {
 			console.log('Getting data from firebase ...')
 			var database = firebase.database()
-			var citiesArray = this.blocks.weather.cities
-			var spotifyArray = this.blocks.spotify.response
-			var trafficArray = this.blocks.traffic.data
 
-			var refCities = database.ref('cities')
+			var refCities = database.ref('weather')
 			var refSpotify = database.ref('spotify')
 			var refTraffic = database.ref('traffic')
 			
-			refCities.orderByValue().limitToLast(3).on("value", function(snapshot) {
-				snapshot.forEach(function(data) {
-					citiesArray.push(data.val());
+			refCities.orderByValue().limitToLast(3).on("value", (snapshot) => {
+				this.blocks.weather.cities = []
+				snapshot.forEach((data) => {
+					this.blocks.weather.cities.push(data.val());
 				});
 			});
 
-			refSpotify.orderByValue().on("value", function(snapshot) {
-				snapshot.forEach(function(data) {
-					spotifyArray.push(data.val());
-				});
+			refSpotify.orderByValue().on("value", (snapshot) => {
+				this.blocks.spotify.response.push(snapshot.val());
 			});
 
-			refTraffic.orderByValue().on("value", function(snapshot) {
-				snapshot.forEach(function(data) {
-					trafficArray.push(data.val());
-				});
+			refTraffic.orderByValue().on("value", (snapshot) => {
+				this.blocks.traffic.data.push(snapshot.val());
 			});
 		},
 		updateDataOnTrigger() {
 			var database = firebase.database()
 
-			var cities = this.blocks.weather.cities
-			var spotify = this.blocks.spotify.response
-			var traffic = this.blocks.traffic.data
-
-			var refCities = database.ref('cities')
+			// var refCities = database.ref('cities')
 			var refSpotify = database.ref('spotify')
 			var refTraffic = database.ref('traffic')
 
-			refCities.on('child_changed', function(d) {
-				refCities.orderByValue().limitToLast(3).on("value", function(snapshot) {
-					citiesArray.length = 0
-					snapshot.forEach(function(data) {
-						cities.push(data.val());
+			// refCities.on('child_changed', () => {
+			// 	refCities.orderByValue().limitToLast(3).on("value", (snapshot) => {
+			// 		this.blocks.weather.cities = []
+			// 		snapshot.forEach( (data) => {
+			// 			// this.blocks.weather.cities.push(data.val())
+			// 		});
+			// 	});
+			// });
+
+			refSpotify.on('child_added', () => {
+				refSpotify.orderByValue().on("value", (snapshot) => {
+					this.blocks.spotify.response.length = 0
+					snapshot.forEach( (data) => {
+						this.blocks.spotify.response.push(data.val())
 					});
 				});
 			});
 
-			refSpotify.on('child_added', function(d) {
-				refSpotify.orderByValue().on("value", function(snapshot) {
-					spotify.length = 0
-					snapshot.forEach(function(data) {
-						spotify.push(data.val());
-					});
-				});
-			});
-
-			refTraffic.on('child_added', function(d) {
-				refTraffic.orderByValue().on("value", function(snapshot) {
-					traffic.length = 0
-					snapshot.forEach(function(data) {
-						traffic.push(data.val());
+			refTraffic.on('child_added', () => {
+				refTraffic.orderByValue().on("value", (snapshot) => {
+					this.blocks.traffic.data.length = 0
+					snapshot.forEach( (data) => {
+						this.blocks.traffic.data.push(data.val())
 					});
 				});
 			});
@@ -264,9 +273,9 @@ export default {
 			var citiesRef = database.ref('cities')
 			var refLastCity = database.ref('cities').limitToFirst(1)
 
-			citiesRef.once("value").then(function(snapshot) {
+			citiesRef.once("value").then( (snapshot) => {
 				if (snapshot.numChildren() > 3) {
-					refLastCity.once("value").then(function(d) {
+					refLastCity.once("value").then( (d) => {
 						// d.remove()
 					})
 					// refLastCity.remove()
@@ -279,7 +288,7 @@ export default {
 
 <style lang="scss">
 	body {
-	overflow: hidden;
+		overflow: hidden;
 	}
 	h1 {
 		font-weight: normal;
@@ -293,6 +302,7 @@ export default {
 		bottom: 0;
 		left: 16px;
 		z-index: 10;
+		opacity: .35;
 	}
 	p {
 		color: white;
@@ -326,7 +336,7 @@ export default {
 	.city {
 		padding: calc(50vh / 2 - 56px) 0;
 		p.temp {
-			font-size: 30px;
+			font-size: 2em;
 			font-weight: bold;
 		}
 	} 
@@ -470,6 +480,7 @@ export default {
 			.vehicle {
 				position: absolute;
 				bottom: 16px;
+				color: #35495E;
 			}
 		}
 	}

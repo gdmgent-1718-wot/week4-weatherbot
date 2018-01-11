@@ -2,12 +2,13 @@
 	<div id="app">
 		<header>
 			<span><strong>BAD</strong> - Bot Agency Dashboard</span>
+			<a class="login" href="https://spotify-auth-bad.herokuapp.com/">Login</a>
 			<a href="https://weatherbot-wot.slack.com/oauth/295612897312.6921e0473fb0bfdf77cd1e7d4918507d1fa373e555cd8f41cdbe9b11b63f3792" target="_blank">
 				<img src="./assets/slack_mono_w.svg">
 			</a>
 		</header>
 		<main>
-			<div class="loader"></div>
+			<div id="loader"></div>
 			<router-view></router-view>
 		</main>
 	</div>
@@ -16,7 +17,10 @@
 /* eslint-disable */
 export default {
 	name: 'app',
-	created() {}
+	created() {
+		let loader = document.getElementById('loader')
+		console.log(loader)
+	}
 }
 </script>
 
@@ -29,8 +33,6 @@ export default {
 
 	#app {
 		font-family: 'Montserrat', Helvetica, Arial, sans-serif;
-		-webkit-font-smoothing: antialiased;
-		-moz-osx-font-smoothing: grayscale;
 		color: #2c3e50;
 	}
 
@@ -44,6 +46,21 @@ export default {
 		a {
 			color: #fff;
 		}
+		a.login {
+			position: absolute;
+			top: 10px;
+			right: 16px;
+			background-color: #1db954;
+			color: white;
+			text-decoration: none;
+			padding: 8px 16px;
+			border-radius: 50px;
+			transition-property: background-color;
+			transition-duration: .3s;
+		}
+		a.login:hover {
+			background-color: #1ed760
+		}
 		span {
 			display: block;
 			position: relative;
@@ -53,10 +70,11 @@ export default {
 			letter-spacing: .02em;
 			font-weight: 400;
 			box-sizing: border-box;
+			margin-left: 100px;
 		}
 		img {
 			position: absolute;
-			right: 16px;
+			left: 16px;
 			display: block;
 			height: 24px;
 			top: 16px;
@@ -64,7 +82,7 @@ export default {
 	}
 
 
-	.loader {
+	#loader {
 		border: 8px solid #f3f3f3;
 		border-top: 8px solid #d81786;
 		border-radius: 50%;
