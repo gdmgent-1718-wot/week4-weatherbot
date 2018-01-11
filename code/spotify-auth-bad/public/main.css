@@ -1,0 +1,71 @@
+body {
+    margin: 0;
+    font-family: 'Montserrat', Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: #2c3e50;
+}
+.container {
+    width: 400px;
+    margin: 0 auto;
+    text-align: center;
+    position: relative;
+}
+h1 {
+    margin-bottom: 2em;
+    padding-top: 3em;
+}
+a.login {
+    background-color: #1db954;
+    color: white;
+    text-decoration: none;
+    padding: 16px 32px;
+    border-radius: 50px;
+    transition-property: background-color;
+    transition-duration: .3s;
+}
+a.login:hover {
+    background-color: #1ed760
+}
+#obtain-new-token {
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+    position: absolute;
+    top: 15px;
+    right: 0;
+    background-color: #1db954;
+    color: white;
+    border: none;
+    transition-property: background-color;
+    transition-duration: .3s;
+}
+
+#back {
+    position: absolute;
+    top: 30px;
+    left: 0;
+    text-decoration: none;
+    color: #1db954;
+    transition-property: background-color;
+    transition-duration: .3s;
+}
+#back:hover {
+    color: #1ed760
+}
+
+#back:hover {
+    text-decoration: underline;
+}
+
+#obtain-new-token:hover {
+    background-color: #1ed760;
+    cursor: pointer;
+}
+
+p.text-overflow {
+    text-overflow: ellipsis;
+    height: 1em;
+    overflow: hidden;
+    font-size: 14px;
+}

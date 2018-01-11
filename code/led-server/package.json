@@ -1,0 +1,17 @@
+{
+  "name": "led-server",
+  "version": "1.0.0",
+  "description": "Node.js server for Raspbery Pi LED Matrix",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.17.1",
+    "express": "^4.16.2",
+    "express-generator": "^4.15.5",
+    "firebase": "^4.8.1"
+  }
+}
