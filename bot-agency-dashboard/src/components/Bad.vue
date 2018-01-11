@@ -63,13 +63,13 @@
 			</div>
 
 			<!-- CITIES -->
-			<div v-for="(city, index) in blocks.weather.cities.reverse()" :key="city.id" :class="['item item-' + (index + 4)]">
+			<!-- <div v-for="(city, index) in blocks.weather.cities.reverse()" :key="city.id" :class="['item item-' + (index + 4)]">
 				<div class="city">
 					<p class="temp">{{ city.temp }} °C</p>
 					<p class="name">{{ city.city }}</p>
 				</div>
-			</div>
-			<!-- <div class="item item-4">
+			</div> -->
+			<div class="item item-4">
 				<div class="city">
 					<p class="temp">{{ blocks.weather.cities[2].temp }} °C</p>
 					<p class="name">{{ blocks.weather.cities[2].city }}</p>
@@ -89,7 +89,7 @@
 					<p class="name">{{ blocks.weather.cities[0].city }}</p>
 				</div>
 				<div class="image"></div>
-			</div> -->
+			</div>
 
 			<!-- TRAFFIC -->
 			<div class="item item-7">

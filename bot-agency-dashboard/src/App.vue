@@ -16,11 +16,7 @@
 <script>
 /* eslint-disable */
 export default {
-	name: 'app',
-	created() {
-		let loader = document.getElementById('loader')
-		console.log(loader)
-	}
+	name: 'app'
 }
 </script>
 
@@ -91,8 +87,8 @@ export default {
 		position: absolute;
 		top: calc(50vh - 28px);
 		left: calc(50vw - 28px);
-		-webkit-animation: spin 2s linear infinite;
-		animation: spin 2s linear infinite;
+		-webkit-animation: spin 2s linear forwards;
+		animation: spin 2s linear forwards;
 	}
 
 	@-webkit-keyframes spin {
@@ -134,10 +130,12 @@ export default {
 		}
 		80% {
 			border-top: 8px solid #1BAAC4;
+			opacity: 1;
 		}
 		100% { 
 			transform: rotate(360deg);
 			border-top: 8px solid #d81786;
+			opacity: 0;
 		}
 	}
 </style>
