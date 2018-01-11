@@ -1,0 +1,114 @@
+section img.logo {
+    margin-top: 100px !important;
+}
+li {
+    line-height: 2em !important;
+}
+.names {
+    font-size: 0.5em !important;
+    text-align: right;
+    position: absolute;
+    left: 50px;
+    bottom: -150px;
+}
+section h2 {
+    font-size: 1.5em !important;
+    font-weight: 100 !important;
+    color: #FFF !important;
+}
+section p.slogan {
+    width: 50%;
+    margin: 0 auto;
+    font-size: 0.8em;
+    font-weight: 100;
+    font-style: italic;
+}
+section ul ul {
+    font-size: 0.8em !important;
+}
+#h1-screencast {
+    margin-top: -350px !important;
+    opacity: 0.75;
+    color: #FFF !important;
+}
+#small-screencast {
+    margin-top: -120px !important;
+    color: #FFF !important;
+    opacity: 0.35;
+}
+span.blue {
+    color: dodgerblue;
+}
+span.bold {
+    font-weight: bolder;
+}
+.reveal table {
+    color: #0066cc;    
+}
+.reveal td {
+    text-align: center !important;
+}
+
+.group-photo {
+    position: relative;
+    margin-top: 50px !important;
+}
+.photo-persona:nth-of-type(even) {
+    height: 350px;
+    width: auto;
+    transform: rotate(-15deg);
+    margin: -50px 30px 0 50px !important;
+}
+.photo-persona:nth-of-type(odd) {
+    height: 350px;
+    width: auto;
+    transform: rotate(15deg);
+    margin: -50px 30px 0 50px !important;
+}
+.photo-wf {
+    height: 330px;
+    width: auto;
+}
+.photo-vd {
+    height: 23%;
+    width: 23%;
+    margin-left: -50px !important;
+}
+.photo st {
+    width: 100%;
+}
+.container-sitemap {
+    width: 100%;
+    margin-top: 50px !important;
+}
+.box {
+    text-align: center; 
+    width: 45%;
+    float: left;
+    background-color: rgba(88,170,124,1);
+    color: #FFF;
+    margin: 50px 5px !important;
+    font-weight: 600 !important;
+    font-size: 0.8em !important;
+    padding: 10px 8px !important;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.8)
+}
+.box:nth-of-type(1),
+.box:nth-of-type(4) {
+    margin: 0 25% !important;
+}
+video {
+    height: 80% !important;
+    width: 80% !important;
+    margin: 5% 10% !important;
+}
+table td {
+    color: white;
+}
+img.photo-st {
+    width: 49%;
+}
+xmp {
+    font-size: 0.5em;
+    line-height: 1em;
+}
